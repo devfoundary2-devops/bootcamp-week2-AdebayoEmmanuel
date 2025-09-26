@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-config
+  namespace: shopmicro
+data:
+  mimir.yaml: |
+    # Monolithic Mimir configuration based on the lab guide
+    target: all
+
+    server:
+      http_listen_port: 9009
+
+    distributor:
+      ring:
+        kvstore:
+          store: memberlist
+
+    ingester:
+      ring:
+        kvstore:
+          store: memberlist
+
+    # Using filesystem storage as specified
+    common:
+      storage:
+        backend: filesystem
+        filesystem:
+          dir: /data/tsdb
+
+    blocks_storage:
+      backend: filesystem
+      filesystem:
+        dir: /data/blocks
+
+    ruler:
+      rule_path: /data/rules
+      alertmanager_url: http://localhost:9009
+
+    alertmanager:
+      data_dir: /data/alertmanager
+      external_url: http://localhost:9009
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-deployment
+  namespace: shopmicro
+  labels:
+    app: mimir
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mimir
+  template:
+    metadata:
+      labels:
+        app: mimir
+    spec:
+      containers:
+      - name: mimir
+        image: grafana/mimir:2.13.0
+        args:
+        - "-target=all"
+        - "-config.file=/etc/mimir/mimir.yaml"
+        ports:
+        - name: http-mimir
+          containerPort: 9009
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "400m"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/mimir
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: config
+        configMap:
+          name: mimir-config
+      - name: data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-service
+  namespace: shopmicro
+  labels:
+    app: mimir
+spec:
+  selector:
+    app: mimir
+  ports:
+  - name: http-mimir
+    port: 9009
+    targetPort: 9009

@@ -1,0 +1,119 @@
+.
+├── KUBERNETES_BOOTCAMP_LAB.md
+├── README.md
+├── backend
+│   ├── Dockerfile
+│   ├── middleware
+│   │   ├── logging.js
+│   │   └── metrics.js
+│   ├── node_modules
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   ├── frontend-metrics.js
+│   │   ├── health.js
+│   │   ├── products.js
+│   │   └── users.js
+│   ├── server.js
+│   └── telemetry.js
+├── docker-compose.yml
+├── docs
+│   ├── QUICKSTART.md
+│   └── day1
+│       └── README.md
+├── frontend
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── index.html
+│   └── src
+│       ├── App.css
+│       ├── App.js
+│       ├── components
+│       │   ├── Navbar.js
+│       │   └── RouteTracker.js
+│       ├── hooks
+│       │   └── useMonitoring.js
+│       ├── index.js
+│       ├── pages
+│       │   ├── AdminDashboard.js
+│       │   ├── ProductDetail.js
+│       │   ├── ProductList.js
+│       │   └── UserProfile.js
+│       └── services
+│           ├── api.js
+│           └── monitoring.js
+├── infrastructure
+│   ├── alloy
+│   │   ├── config-official.alloy
+│   │   └── config.alloy
+│   ├── grafana
+│   │   ├── dashboards
+│   │   │   ├── application-overview.json
+│   │   │   ├── backend-service.json
+│   │   │   ├── logs-traces.json
+│   │   │   ├── ml-service.json
+│   │   │   └── shopmicro-overview.json
+│   │   ├── grafana.ini
+│   │   └── provisioning
+│   │       ├── dashboards
+│   │       │   └── dashboards.yml
+│   │       └── datasources
+│   │           └── prometheus.yml
+│   ├── kubernetes
+│   │   ├── backend.yaml
+│   │   ├── configmap.yaml
+│   │   ├── frontend.yaml
+│   │   ├── ingress.yaml
+│   │   ├── ml-service.yaml
+│   │   ├── namespace.yaml
+│   │   ├── postgres.yaml
+│   │   └── redis.yaml
+│   ├── loki
+│   │   ├── loki-official.yaml
+│   │   ├── loki-simple.yaml
+│   │   └── loki.yaml
+│   ├── mimir
+│   │   ├── mimir-official.yaml
+│   │   ├── mimir-simple.yaml
+│   │   └── mimir.yaml
+│   ├── postgres
+│   │   └── init.sql
+│   └── tempo
+│       ├── tempo-official.yaml
+│       ├── tempo-simple.yaml
+│       └── tempo.yaml
+├── k8s
+│   ├── deployments
+│   │   ├── backend.yaml
+│   │   ├── grafana.yaml
+│   │   ├── postgres.yaml
+│   │   └── redis.yaml
+│   └── namespace.yaml
+├── ml-service
+│   ├── Dockerfile
+│   ├── __pycache__
+│   │   ├── logging_config.cpython-312.pyc
+│   │   ├── metrics.cpython-312.pyc
+│   │   └── telemetry.cpython-312.pyc
+│   ├── app.py
+│   ├── logging_config.py
+│   ├── metrics.py
+│   ├── requirements.txt
+│   └── telemetry.py
+├── scripts
+│   ├── deploy-k8s-lab.sh
+│   ├── quick-start.sh
+│   ├── start-full-observability.sh
+│   ├── status-check.sh
+│   └── test-docker-compose.sh
+├── tree.txt
+└── work-log
+    ├── achievements.md
+    ├── daily-progress.md
+    ├── easter-eggs-found.md
+    └── troubleshooting-notes.md
+
+32 directories, 85 files

@@ -16,16 +16,16 @@ spec:
   limits:
   - type: Container
     default:
-      memory: "512Mi"
-      cpu: "500m"
-    defaultRequest:
       memory: "256Mi"
+      cpu: "200m"
+    defaultRequest:
+      memory: "128Mi"
       cpu: "100m"
     max:
       memory: "1Gi"
       cpu: "1000m"
     min:
-      memory: "128Mi"
+      memory: "64Mi"
       cpu: "50m"
 ---
 apiVersion: v1
@@ -35,11 +35,11 @@ metadata:
   namespace: shopmicro
 spec:
   hard:
-    requests.cpu: "2000m"
-    requests.memory: 4Gi
+    requests.cpu: "4000m"
+    requests.memory: "6Gi"
     limits.cpu: "4000m"
-    limits.memory: 8Gi
+    limits.memory: "6Gi"
     count/persistentvolumeclaims: "4"
-    count/services: "10"
-    count/secrets: "10"
-    count/configmaps: "10"
+    count/services: "15"
+    count/secrets: "15"
+    count/configmaps: "15"
