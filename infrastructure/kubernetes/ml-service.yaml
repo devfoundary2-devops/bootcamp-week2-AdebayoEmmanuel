@@ -24,11 +24,18 @@ spec:
     spec:
       containers:
       - name: ml-service
-        image: ghcr.io/your-org/shopmicro/ml-service:latest
+        image: shopmicro-ml-service:v1.2
+        imagePullPolicy: Never
         ports:
         - containerPort: 3002
           name: http
         env:
+        - name: OTEL_SERVICE_NAME
+          value: "shopmicro-ml-service"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://tempo:4318"
+        - name: OTEL_PYTHON_AUTO_INSTRUMENTATION_ENABLED
+          value: "true"
         - name: FLASK_ENV
           valueFrom:
             configMapKeyRef:
@@ -48,11 +55,11 @@ spec:
               key: BACKEND_URL
         resources:
           requests:
-            memory: "512Mi"
+            memory: "512Mi" 
             cpu: "200m"
           limits:
             memory: "1Gi"
-            cpu: "500m"
+            cpu: "300m"
         livenessProbe:
           httpGet:
             path: /health/live

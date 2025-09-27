@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+  namespace: shopmicro
+  labels:
+    app: alloy
+data:
+  config.alloy: |
+    // --- Global Logging ---
+    logging {
+        level  = "info"
+        format = "logfmt"
+    }
+
+    // --- METRICS PIPELINE ---
+    // 1. Define Mimir as the destination for metrics.
+    prometheus.remote_write "mimir" {
+        endpoint {
+            url = "http://mimir-service:9009/api/v1/push"
+            headers = {
+                "X-Scope-OrgID" = "shopmicro",
+            }
+        }
+    }
+
+    // 2. Discover Kubernetes pods to scrape metrics from.
+    discovery.kubernetes "metrics_pods" {
+        role = "pod"
+        // Removed 'namespace' attribute as it's not supported in this context
+    }
+
+    // 3. Scrape metrics from discovered pods and forward to Mimir.
+    prometheus.scrape "kubernetes_pods" {
+        targets    = discovery.kubernetes.metrics_pods.targets
+        forward_to = [prometheus.remote_write.mimir.receiver]
+        // Removed 'relabel_configs' as it's not supported in this context
+    }
+
+    // --- LOGS PIPELINE ---
+    // 1. Define Loki as the destination for logs.
+    loki.write "loki" {
+        endpoint {
+            url = "http://loki:3100/loki/api/v1/push"
+        }
+        external_labels = {
+            "cluster" = "dev",
+        }
+    }
+
+    // 2. Discover all pods in the 'shopmicro' namespace for log collection.
+    discovery.kubernetes "logs_pods" {
+      role = "pod"
+      selectors {
+        role = "pod"
+      }
+    }
+
+    // 3. Tail logs from the discovered pods and forward to Loki.
+    loki.source.kubernetes "pod_logs" {
+      targets    = discovery.kubernetes.logs_pods.targets
+      forward_to = [loki.write.loki.receiver]
+    }
+
+    // --- TRACES PIPELINE ---
+    // 1. Receive traces from applications via OTLP.
+    otelcol.receiver.otlp "traces" {
+        grpc {
+            endpoint = "0.0.0.0:4317"
+        }
+        http {
+            endpoint = "0.0.0.0:4318"
+        }
+        output {
+            traces = [otelcol.exporter.otlp.tempo.input]
+        }
+    }
+
+    // 2. Export the received traces to Tempo.
+    otelcol.exporter.otlp "tempo" {
+        client {
+            endpoint = "tempo:4317"
+            tls {
+                insecure = true
+            }
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alloy-deployment
+  namespace: shopmicro
+  labels:
+    app: alloy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alloy
+  template:
+    metadata:
+      labels:
+        app: alloy
+    spec:
+      serviceAccountName: alloy
+      containers:
+      - name: alloy
+        image: grafana/alloy:latest
+        args:
+          - "run"
+          - "/etc/alloy/config.alloy"
+        ports:
+        - name: http-alloy
+          containerPort: 12345
+        - name: otlp-grpc
+          containerPort: 4317
+        - name: otlp-http
+          containerPort: 4318
+        resources:
+          requests:
+            cpu: "150m"
+            memory: "256Mi"
+          limits:
+            cpu: "200m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alloy
+      volumes:
+      - name: config
+        configMap:
+          name: alloy-config
+---
+# A service is needed to expose the OTLP ports to other pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloy
+  namespace: shopmicro
+spec:
+  selector:
+    app: alloy
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
